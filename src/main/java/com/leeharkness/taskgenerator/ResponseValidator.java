@@ -38,11 +38,11 @@ public class ResponseValidator {
 		}
 
 		for (int i = 0; i < responses.size(); i++) {
-			if (responses.get(i).getValue().equals(correctResponses.get(i).getValue())) {
-				results.add(Result.builder().withStatus(Result.Status.CORRECT).build());
+			if (responses.get(i).getValue().trim().equals(correctResponses.get(i).getValue().trim())) {
+				results.add(Result.builder().withStatus(Result.Status.C).build());
 			}
 			else {
-				results.add(Result.builder().withStatus(Result.Status.INCORRECT).build());
+				results.add(Result.builder().withStatus(Result.Status.I).build());
 			}
 		}
 
@@ -57,12 +57,13 @@ public class ResponseValidator {
 	private List<Response> generateCorrectResponses() {
 		List<Response> correctResponses = new ArrayList<>();
 		for (SequenceItem sequenceItem : sequence) {
-			if (sequenceItem.getValue().equals("Red")) {
+			if (sequenceItem.getValue().trim().equals(rule)) {
 				correctResponses.add(Response.builder().withValue("true").build());
 			} else {
 				correctResponses.add(Response.builder().withValue("false").build());
 			}
 		}
+
 		return correctResponses;
 	}
 }

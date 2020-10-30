@@ -17,7 +17,7 @@ public class Result {
      * Possible value for the user's response to a sequence item
      */
     enum Status {
-        CORRECT,
-        INCORRECT
+        C,
+        I
     }
 }

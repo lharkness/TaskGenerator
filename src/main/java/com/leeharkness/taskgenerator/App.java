@@ -2,11 +2,14 @@ package com.leeharkness.taskgenerator;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDateTime;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Driver application for task generation.  This thing will take
@@ -29,68 +32,91 @@ public class App {
 	 * @param args Expects two strings - the file path to the setup and the file path to the test data
 	 */
     public static void main(String[] args) {
-	    // Read our inputs - for now, let's hardcode them
-	    List<SequenceItem> sequence = Arrays.asList(
-	    		SequenceItem.builder().withValue("Red").build(),
-				SequenceItem.builder().withValue("Blue").build(),
-				SequenceItem.builder().withValue("Red").build(),
-				SequenceItem.builder().withValue("Orange").build(),
-				SequenceItem.builder().withValue("Yellow").build()
-		);
-		// This should be in the setup file
-	    String rule = "Red";
+		App app = new App();
+		app.run(args);
+	}
+
+	private void run(@SuppressWarnings("unused") String[] args) {
+    	// Read our inputs - for now, get them from resources within this jar
+		List<SequenceItem> sequence = readSequence();
+	    String rule = readRule();
+		List<ExpectedResult> expectedResults = readExpectedResults();
 
 	    ResponseValidator responseValidator = new ResponseValidator(sequence, rule);
 
-	    // These will be in the test data file
-	    List<Response> rawValidResponse = generateValidResponse(sequence, rule);
-	    List<Response> rawInvalidResponse = generateInvalidResponse(sequence, rule);
-
-	    List<Result> validTaskResult = responseValidator.validate(rawValidResponse);
-	    List<Result> invalidTaskResult = responseValidator.validate(rawInvalidResponse);
-
 	    // Validate behavior
-		System.out.println(validTaskResult.toString());
-		System.out.println(invalidTaskResult.toString());
+		for (ExpectedResult expectedResult : expectedResults) {
+			List<Result> results = responseValidator.validate(expectedResult.getResponses());
+			for (int i = 0; i < results.size(); i++) {
+				if (results.get(i).getStatus() != expectedResult.getStatuses().get(i)) {
+					System.out.println("Error!  Expected: " + expectedResult.getStatuses().get(i) +
+							" but received " + results.get(i).getStatus());
+				}
+			}
+		}
 
 		// TODO: generate HIT, call MTS to publish to Dev Sandbox
     }
 
-    static List<Response> generateValidResponse(List<SequenceItem> sequence, String rule) {
-    	List<Response> responseList = new ArrayList<>();
+	private List<ExpectedResult> readExpectedResults() {
+		List<String> fileContents = getFileContentsFor("testData.txt");
+		if (fileContents.size() % 2 != 0) {
+			log.error("Expected Results contains an odd number of lines");
+		}
+		List<ExpectedResult> expectedResults = new ArrayList<>();
+		int i = -1;
+		while (i < fileContents.size() - 1) {
+			i++;
+			// The first line is responses - absent real timing data
+			String[] responseValues = fileContents.get(i).split(",");
+			List<Response> responses = new ArrayList<>();
+			for (String response : responseValues) {
+				responses.add(Response.builder()
+						.withTimeStamp(new Date().getTime())
+						.withValue(response.trim())
+						.build());
+			}
+			i++;
+			// The second line is the expected results
+			String[] resultValues = fileContents.get(i).split(",");
+			List<Result.Status> statuses = new ArrayList<>();
+			for (String resultValue : resultValues) {
+				statuses.add(Result.Status.valueOf(resultValue.trim()));
+			}
+			expectedResults.add(ExpectedResult.builder().withResponses(responses).withStatuses(statuses).build());
+		}
+		return expectedResults;
+	}
 
-    	// For now, we'll hardcode this to work with the rule we have above
-		Response firstResponse = Response.builder().withTimeStamp(1L).withValue("true").build();
-		Response secondResponse = Response.builder().withTimeStamp(2L).withValue("false").build();
-		Response thirdResponse = Response.builder().withTimeStamp(3L).withValue("true").build();
-		Response fourthResponse = Response.builder().withTimeStamp(4L).withValue("false").build();
-		Response fifthResponse = Response.builder().withTimeStamp(5L).withValue("false").build();
+	private String readRule() {
+		List<String> fileContents = getFileContentsFor("setup.txt");
+		return fileContents.get(1).trim();
+	}
 
-		responseList.add(firstResponse);
-		responseList.add(secondResponse);
-		responseList.add(thirdResponse);
-		responseList.add(fourthResponse);
-		responseList.add(fifthResponse);
+	private List<SequenceItem> readSequence() {
+		List<String> fileContents = getFileContentsFor("setup.txt");
+		String[] sequenceValues = fileContents.get(0).split(",");
+		List<SequenceItem> sequenceItems = new ArrayList<>();
+		for (String sequenceValue : sequenceValues) {
+			sequenceItems.add(SequenceItem.builder().withValue(sequenceValue).build());
+		}
+		return sequenceItems;
+	}
 
-    	return responseList;
-    }
-
-    static List<Response> generateInvalidResponse(List<SequenceItem> sequence, String rule) {
-		List<Response> responseList = new ArrayList<>();
-
-		// For now, we'll hardcode this to work with the rule we have above
-		Response firstResponse = Response.builder().withTimeStamp(1L).withValue("true").build();
-		Response secondResponse = Response.builder().withTimeStamp(2L).withValue("false").build();
-		Response thirdResponse = Response.builder().withTimeStamp(3L).withValue("false").build();
-		Response fourthResponse = Response.builder().withTimeStamp(4L).withValue("false").build();
-		Response fifthResponse = Response.builder().withTimeStamp(5L).withValue("false").build();
-
-		responseList.add(firstResponse);
-		responseList.add(secondResponse);
-		responseList.add(thirdResponse);
-		responseList.add(fourthResponse);
-		responseList.add(fifthResponse);
-
-		return responseList;
-    }
+	private List<String> getFileContentsFor(String filePath) {
+		List<String> lines = new ArrayList<>();
+    	try {
+			ClassLoader classLoader = getClass().getClassLoader();
+			InputStream inputStream = classLoader.getResourceAsStream(filePath);
+			assert inputStream != null;
+			InputStreamReader isr = new InputStreamReader(inputStream);
+			BufferedReader br = new BufferedReader(isr);
+			lines = br.lines().collect(Collectors.toList());
+			br.close();
+		}
+    	catch (IOException ioe) {
+    		log.error(ioe.getLocalizedMessage(), ioe);
+		}
+		return lines;
+	}
 }
