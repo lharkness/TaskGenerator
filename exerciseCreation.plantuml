@@ -1,0 +1,26 @@
+@startuml
+start
+:Create Input Files;
+note right
+setup file
+test data file
+end note
+:Run TaskGenerator;
+:Emits output files;
+note right
+task artifacts
+validation results
+end note
+stop
+start
+:validate rules work as intended;
+note right
+Load the task artifacts into browser
+and run the task
+======
+Verify that validation results are as expected
+end note
+:Run TaskGenerator to publish artifacts;
+start
+
+@enduml
