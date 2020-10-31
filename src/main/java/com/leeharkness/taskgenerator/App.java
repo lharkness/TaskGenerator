@@ -1,11 +1,13 @@
 package com.leeharkness.taskgenerator;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +56,22 @@ public class App {
 				}
 			}
 		}
+
+		// Generate Javascript
+		VelocityEngine velocityEngine = new VelocityEngine();
+		velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+		velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+		velocityEngine.init();
+
+		Template t = velocityEngine.getTemplate("taskArtifact.vm");
+
+		VelocityContext context = new VelocityContext();
+
+		StringWriter writer = new StringWriter();
+		t.merge( context, writer );
+
+		System.out.println(writer.toString());
+
 
 		// TODO: generate HIT, call MTS to publish to Dev Sandbox
     }
