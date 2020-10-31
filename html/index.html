@@ -7,7 +7,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         let baseTime = Date.now();
-        // Insert loop over the sequence
         let div1Clicked = false;
         let div2Clicked = false;
         let div3Clicked = false;
@@ -17,7 +16,6 @@
         $(function() {
             let numDivs = document.getElementsByClassName("display").length;
             let responseTimes = document.getElementById("reactionTimes").value;
-            // Insert loop over the sequence
             $( "#div1" ).click(function() {
                 div1Clicked = true;
                 responseTimes = responseTimes += Date.now() - baseTime + " ";
@@ -31,25 +29,23 @@
                 responseTimes = responseTimes += Date.now() - baseTime + " ";
             });
 
-            // This should be configurable
             const timer = setInterval(showDiv, 2000);
 
             let counter = 0;
             function showDiv() {
                 $('div', '#container')
-                        .stop()
-                        .hide()
-                        .after(resetBaseTime())
-                        .filter(function() {
-                            return this.id.match('div' + counter);
-                        })
-                        .show('fast');
+                    .stop()
+                    .hide()
+                    .after(resetBaseTime())
+                    .filter(function() {
+                        return this.id.match('div' + counter);
+                    })
+                    .show('fast');
                 if (counter !== numDivs) {
                     counter++;
                 }
                 else {
                     clearInterval(timer);
-                    // For debugging only
                     alert("Response Times: " + responseTimes);
                     showResults();
                 }
@@ -61,7 +57,6 @@
         }
 
         function showResults() {
-            // For debugging only - loop over the sequence
             alert("Responses: " + div1Clicked + "," + div2Clicked + "," + div3Clicked);
         }
 
@@ -85,25 +80,24 @@
     </style>
 </head>
 <body>
-<form name="experiment">
-    <input type="hidden" name="responses" id="responses" />
-    <input type="hidden" name="reactionTimes" id="reactionTimes" />
-    <div id='container'>
-        <div id='div0' class='display'>
-            Begin Experiment
+    <form name="experiment">
+        <input type="hidden" name="responses" id="responses" />
+        <input type="hidden" name="reactionTimes" id="reactionTimes" />
+        <div id='container'>
+            <div id='div0' class='display'>
+                Begin Experiment
+            </div>
+            <div id='div1' class='display' style="background-color: red;">
+            </div>
+            <div id='div2' class='display' style="background-color: green;">
+            </div>
+            <div id='div3' class='display' style="background-color: blue;">
+            </div>
+            <div id='div4' class='display'>
+                End Experiment
+            </div>
         </div>
-        <!-- loop over the sequence and fill from sequence items -->
-        <div id='div1' class='display' style="background-color: red;">
-        </div>
-        <div id='div2' class='display' style="background-color: green;">
-        </div>
-        <div id='div3' class='display' style="background-color: blue;">
-        </div>
-        <div id='div4' class='display'>
-            End Experiment
-        </div>
-    </div>
-</form>
+    </form>
 
 </body>
 

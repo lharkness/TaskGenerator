@@ -73,7 +73,7 @@ public class App {
 		System.out.println(writer.toString());
 
 
-		// TODO: generate HIT, call MTS to publish to Dev Sandbox
+		// TODO: generate HIT, call MTS to publish to Dev Sandbox -publish HTML to S3
     }
 
 	private List<ExpectedResult> readExpectedResults() {
