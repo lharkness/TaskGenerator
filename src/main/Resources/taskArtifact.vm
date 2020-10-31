@@ -59,6 +59,16 @@
                 statuses = statuses + divClicked$foreach.count + " ";
             #end
             alert("Responses: " + statuses);
+            let correctResponsesString = '$correctResults';
+            let correctResponses = correctResponsesString.split(' ');
+            let responses = statuses.split(' ');
+            let numberRight = 0;
+            for (let i = 0; i < correctResponses.length; i++) {
+               if (responses[i] === correctResponses[i]) {
+                   numberRight++;
+               }
+            }
+            alert("Number right: " + numberRight + "/" + $items.size());
         }
 
     </script>

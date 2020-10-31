@@ -1,2 +1,3 @@
 red, blue, red, orange, yellow
 red
+true false true false false

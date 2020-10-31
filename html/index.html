@@ -77,6 +77,16 @@
             statuses = statuses + divClicked4 + " ";
             statuses = statuses + divClicked5 + " ";
             alert("Responses: " + statuses);
+            let correctResponsesString = 'true false true false false';
+            let correctResponses = correctResponsesString.split(' ');
+            let responses = statuses.split(' ');
+            let numberRight = 0;
+            for (let i = 0; i < correctResponses.length; i++) {
+                if (responses[i] === correctResponses[i]) {
+                    numberRight++;
+                }
+            }
+            alert("Number right: " + numberRight + "/" + 5);
         }
 
     </script>

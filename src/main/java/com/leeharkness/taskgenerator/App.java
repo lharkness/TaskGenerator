@@ -42,6 +42,7 @@ public class App {
     	// Read our inputs - for now, get them from resources within this jar
 		List<SequenceItem> sequence = readSequence();
 	    String rule = readRule();
+	    String correctResults = readCorrectResults();
 		List<ExpectedResult> expectedResults = readExpectedResults();
 
 	    ResponseValidator responseValidator = new ResponseValidator(sequence, rule);
@@ -70,6 +71,7 @@ public class App {
 		context.put("interval", 2000);
 		context.put("lastItem", sequence.size() + 1);
 		context.put("rule", "Click when you see " + rule);
+		context.put("correctResults", correctResults);
 
 		StringWriter writer = new StringWriter();
 		t.merge( context, writer );
@@ -113,6 +115,11 @@ public class App {
 	private String readRule() {
 		List<String> fileContents = getFileContentsFor("setup.txt");
 		return fileContents.get(1).trim();
+	}
+
+	private String readCorrectResults() {
+		List<String> fileContents = getFileContentsFor("setup.txt");
+		return fileContents.get(2).trim();
 	}
 
 	private List<SequenceItem> readSequence() {
