@@ -69,7 +69,7 @@ public class App {
 		context.put("items", sequence);
 		context.put("interval", 2000);
 		context.put("lastItem", sequence.size() + 1);
-		context.put("rule", "Press Button after " + rule);
+		context.put("rule", "Click when you see " + rule);
 
 		StringWriter writer = new StringWriter();
 		t.merge( context, writer );
