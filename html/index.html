@@ -7,28 +7,39 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         let baseTime = Date.now();
-        let div1Clicked = false;
-        let div2Clicked = false;
-        let div3Clicked = false;
-
+        let divClicked1 = false;
+        let divClicked2 = false;
+        let divClicked3 = false;
+        let divClicked4 = false;
+        let divClicked5 = false;
         $('html').addClass('js');
 
         $(function() {
             let numDivs = document.getElementsByClassName("display").length;
             let responseTimes = document.getElementById("reactionTimes").value;
-            $( "#div1" ).click(function() {
-                div1Clicked = true;
+
+            $( '#div1' ).click(function() {
+                divClicked1 = true;
                 responseTimes = responseTimes += Date.now() - baseTime + " ";
             });
-            $( "#div2" ).click(function() {
-                div2Clicked = true;
+            $( '#div2' ).click(function() {
+                divClicked2 = true;
                 responseTimes = responseTimes += Date.now() - baseTime + " ";
             });
-            $( "#div3" ).click(function() {
-                div3Clicked = true;
+            $( '#div3' ).click(function() {
+                divClicked3 = true;
+                responseTimes = responseTimes += Date.now() - baseTime + " ";
+            });
+            $( '#div4' ).click(function() {
+                divClicked4 = true;
+                responseTimes = responseTimes += Date.now() - baseTime + " ";
+            });
+            $( '#div5' ).click(function() {
+                divClicked5 = true;
                 responseTimes = responseTimes += Date.now() - baseTime + " ";
             });
 
+            // This should be configurable
             const timer = setInterval(showDiv, 2000);
 
             let counter = 0;
@@ -46,6 +57,7 @@
                 }
                 else {
                     clearInterval(timer);
+                    // For debugging only
                     alert("Response Times: " + responseTimes);
                     showResults();
                 }
@@ -57,7 +69,14 @@
         }
 
         function showResults() {
-            alert("Responses: " + div1Clicked + "," + div2Clicked + "," + div3Clicked);
+            // For debugging only
+            let statuses ="";
+            statuses = statuses + divClicked1 + " ";
+            statuses = statuses + divClicked2 + " ";
+            statuses = statuses + divClicked3 + " ";
+            statuses = statuses + divClicked4 + " ";
+            statuses = statuses + divClicked5 + " ";
+            alert("Responses: " + statuses);
         }
 
     </script>
@@ -67,37 +86,44 @@
             font: 16px Helvetica, Arial;
             color: #000;
         }
-
         .display {
             width: 300px;
             height: 200px;
             border: 2px solid #000;
         }
-
         .js .display {
             display: none;
         }
     </style>
 </head>
 <body>
-    <form name="experiment">
-        <input type="hidden" name="responses" id="responses" />
-        <input type="hidden" name="reactionTimes" id="reactionTimes" />
-        <div id='container'>
-            <div id='div0' class='display'>
-                Begin Experiment
-            </div>
-            <div id='div1' class='display' style="background-color: red;">
-            </div>
-            <div id='div2' class='display' style="background-color: green;">
-            </div>
-            <div id='div3' class='display' style="background-color: blue;">
-            </div>
-            <div id='div4' class='display'>
-                End Experiment
-            </div>
+<form name="experiment">
+    <input type="hidden" name="responses" id="responses" />
+    <input type="hidden" name="reactionTimes" id="reactionTimes" />
+    <div id='container'>
+        <div id='div0' class='display'>
+            Begin Experiment
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            Press Button after red
         </div>
-    </form>
+        <div id='div1' class='display' style="background-color: red;">
+        </div>
+        <div id='div2' class='display' style="background-color:  blue;">
+        </div>
+        <div id='div3' class='display' style="background-color:  red;">
+        </div>
+        <div id='div4' class='display' style="background-color:  orange;">
+        </div>
+        <div id='div5' class='display' style="background-color:  yellow;">
+        </div>
+        <div id='div6' class='display'>
+            End Experiment
+        </div>
+    </div>
+</form>
 
 </body>
 

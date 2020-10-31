@@ -66,6 +66,10 @@ public class App {
 		Template t = velocityEngine.getTemplate("taskArtifact.vm");
 
 		VelocityContext context = new VelocityContext();
+		context.put("items", sequence);
+		context.put("interval", 2000);
+		context.put("lastItem", sequence.size() + 1);
+		context.put("rule", "Press Button after " + rule);
 
 		StringWriter writer = new StringWriter();
 		t.merge( context, writer );

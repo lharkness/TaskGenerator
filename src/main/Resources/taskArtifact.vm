@@ -7,32 +7,24 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         let baseTime = Date.now();
-        // Insert loop over the sequence
-        let div1Clicked = false;
-        let div2Clicked = false;
-        let div3Clicked = false;
-
+        #foreach($item in $items)
+            let divClicked$foreach.count = false;
+        #end
         $('html').addClass('js');
 
         $(function() {
             let numDivs = document.getElementsByClassName("display").length;
             let responseTimes = document.getElementById("reactionTimes").value;
-            // Insert loop over the sequence
-            $( "#div1" ).click(function() {
-                div1Clicked = true;
+
+            #foreach($item in $items)
+            $( '#div$foreach.count' ).click(function() {
+                divClicked$foreach.count = true;
                 responseTimes = responseTimes += Date.now() - baseTime + " ";
             });
-            $( "#div2" ).click(function() {
-                div2Clicked = true;
-                responseTimes = responseTimes += Date.now() - baseTime + " ";
-            });
-            $( "#div3" ).click(function() {
-                div3Clicked = true;
-                responseTimes = responseTimes += Date.now() - baseTime + " ";
-            });
+            #end
 
             // This should be configurable
-            const timer = setInterval(showDiv, 2000);
+            const timer = setInterval(showDiv, $interval);
 
             let counter = 0;
             function showDiv() {
@@ -61,8 +53,12 @@
         }
 
         function showResults() {
-            // For debugging only - loop over the sequence
-            alert("Responses: " + div1Clicked + "," + div2Clicked + "," + div3Clicked);
+            // For debugging only
+            let statuses ="";
+            #foreach($item in $items)
+                statuses = statuses + divClicked$foreach.count + " ";
+            #end
+            alert("Responses: " + statuses);
         }
 
     </script>
@@ -72,13 +68,11 @@
             font: 16px Helvetica, Arial;
             color: #000;
         }
-
         .display {
             width: 300px;
             height: 200px;
             border: 2px solid #000;
         }
-
         .js .display {
             display: none;
         }
@@ -91,15 +85,17 @@
     <div id='container'>
         <div id='div0' class='display'>
             Begin Experiment
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            $rule
         </div>
-        <!-- loop over the sequence and fill from sequence items -->
-        <div id='div1' class='display' style="background-color: red;">
-        </div>
-        <div id='div2' class='display' style="background-color: green;">
-        </div>
-        <div id='div3' class='display' style="background-color: blue;">
-        </div>
-        <div id='div4' class='display'>
+        #foreach($item in $items)
+            <div id='div$foreach.count' class='display' style="background-color: $item.value;">
+            </div>
+        #end
+        <div id='div$lastItem' class='display'>
             End Experiment
         </div>
     </div>
