@@ -6,17 +6,16 @@ defined TaskGenerator can validate these rules and generate artifacts for use in
 Download the jar file.
 
 ### Usage
-Ensure you have Java installed.  Create a setup file (refer to the `setup.txt` file in the project)
+Ensure you have Java installed.  Create a setup file (refer to the `setup.props` file in the project)
 Create a test data file (refer to the `testData.txt` file in the project).  Execute the following command:
 
-`java -jar \path\to\setup.txt \path\to\testData.txt`
+`java -jar \path\to\setup.props \path\to\testData.txt`
 
-The results of the execution will be in two files.  `task.js` is the artifact that
-implements the task.  `validationResults.txt` are the results of running the validation.
+The results of the execution will either upload the JavaScript to S3 if AWS info is provided or output the generated 
+Javascript to the console if not.  If any validation fails the failure will be reported on the console.
 
 ### Notes
-This is mostly vaporware at the moment.  Milestone 1 produces a working generator/validator.  
-Milestone 2 produces Task artifacts.
+This code does not currently upload to S3.
 
 ![overview](exerciseCreation.png)  
  
