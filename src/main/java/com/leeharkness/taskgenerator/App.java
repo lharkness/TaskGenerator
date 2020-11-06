@@ -1,89 +1,101 @@
 package com.leeharkness.taskgenerator;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.leeharkness.taskgenerator.model.ExpectedResult;
+import com.leeharkness.taskgenerator.model.Response;
+import com.leeharkness.taskgenerator.model.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
- * Driver application for task generation.  This thing will take
- *   a file containing
- *    the allowable sequence items
- *    the sequence for the exercise
- *    the rule
+ * Driver application for task generation.  This thing will take two optional arguments.  If one is present then they
+ * both must be present.
+ *   a property file containing
+ *    the sequence for the exercise.  Property name: SEQUENCE
+ *    the correct results for the exercise.  Property name: CORRECT_RESULTS
+ *    the rule.  Property Name: RULE
+ *    (optionally) the AWS key Id.  Property name: AWS_KEY_ID
+ *    (optionally) the AWS key.  Property name: AWS_KEY
+ *    (optionally) the S3 URL.  Property name: S3_URL
  *
  *  a file containing
  *    a set of pairs of lines
- *      the first line is a sample input
- *      the second line is expected output
+ *      the first line in the pair is a sample input
+ *      the second line in the pair is expected output
  *
- *  This program will verify that the actual output given the rule is the expected output
+ *  This program will verify that the actual output given the rule is the expected output and then (optionally)
+ *  update S3
+ *
+ *  TODO: log to a file rather than the console
  */
 @Slf4j
 public class App {
+
 	/**
 	 * Main program entry point.
-	 * @param args Expects two strings - the file path to the setup and the file path to the test data
+	 * @param args Optionally provide two strings - the file path to the setup and the file path to the test data
 	 */
     public static void main(String[] args) {
 		App app = new App();
-		app.run(args);
+		try {
+			app.run(args);
+		}
+		catch (IOException ioe) {
+			log.error("Error loading properties", ioe);
+		}
 	}
 
-	private void run(@SuppressWarnings("unused") String[] args) {
-    	// Read our inputs - for now, get them from resources within this jar
-		List<SequenceItem> sequence = readSequence();
-	    String rule = readRule();
-	    String correctResults = readCorrectResults();
-		List<ExpectedResult> expectedResults = readExpectedResults();
+	private void run(String[] args) throws IOException {
 
-	    ResponseValidator responseValidator = new ResponseValidator(sequence, rule);
+    	List<ExpectedResult> expectedResults;
 
-	    // Validate behavior
-		for (ExpectedResult expectedResult : expectedResults) {
-			List<Result> results = responseValidator.validate(expectedResult.getResponses());
-			for (int i = 0; i < results.size(); i++) {
-				if (results.get(i).getStatus() != expectedResult.getStatuses().get(i)) {
-					System.out.println("Error!  Expected: " + expectedResult.getStatuses().get(i) +
-							" but received " + results.get(i).getStatus());
-				}
-			}
+    	SystemProperties systemProperties;
+    	// If the properties and expected results file paths are provided, read them
+    	if (args.length == 2) {
+			systemProperties = readSystemProperties(args[0]);
+			expectedResults = readExpectedResults(args[1]);
+
+		}
+    	else {
+    		// Otherwise use the ones provided in the jar
+			systemProperties = readSystemProperties("setup.props");
+    		expectedResults = readExpectedResults("testData.txt");
 		}
 
-		// Generate Javascript
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-		velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
-		velocityEngine.init();
+		Injector injector = Guice.createInjector();
+		TaskGenerator taskGenerator = injector.getInstance(TaskGenerator.class);
+		taskGenerator.run(systemProperties, expectedResults);
+	}
 
-		Template t = velocityEngine.getTemplate("taskArtifact.vm");
+	/**
+	 * Read system properties from a file
+	 * @param filePath The file path to the properties file
+	 * @return the SystemProperties found at filePath
+	 */
+	private SystemProperties readSystemProperties(String filePath) throws IOException {
+		ClassLoader classLoader = getClass().getClassLoader();
+		InputStream inputStream = classLoader.getResourceAsStream(filePath);
+		assert inputStream != null;
+		InputStreamReader isr = new InputStreamReader(inputStream);
+		Properties props = new Properties();
+		props.load(isr);
 
-		VelocityContext context = new VelocityContext();
-		context.put("items", sequence);
-		context.put("interval", 2000);
-		context.put("lastItem", sequence.size() + 1);
-		context.put("rule", "Click when you see " + rule);
-		context.put("correctResults", correctResults);
+		return SystemProperties.loadFrom(props);
 
-		StringWriter writer = new StringWriter();
-		t.merge( context, writer );
+	}
 
-		System.out.println(writer.toString());
-
-
-		// TODO: generate HIT, call MTS to publish to Dev Sandbox -publish HTML to S3
-    }
-
-	private List<ExpectedResult> readExpectedResults() {
-		List<String> fileContents = getFileContentsFor("testData.txt");
+	private List<ExpectedResult> readExpectedResults(String fileName) {
+		List<String> fileContents = getFileContentsFor(fileName);
 		if (fileContents.size() % 2 != 0) {
 			log.error("Expected Results contains an odd number of lines");
 		}
@@ -101,7 +113,7 @@ public class App {
 						.build());
 			}
 			i++;
-			// The second line is the expected results
+			// The second line is the expected results for those responses
 			String[] resultValues = fileContents.get(i).split(",");
 			List<Result.Status> statuses = new ArrayList<>();
 			for (String resultValue : resultValues) {
@@ -112,29 +124,9 @@ public class App {
 		return expectedResults;
 	}
 
-	private String readRule() {
-		List<String> fileContents = getFileContentsFor("setup.txt");
-		return fileContents.get(1).trim();
-	}
-
-	private String readCorrectResults() {
-		List<String> fileContents = getFileContentsFor("setup.txt");
-		return fileContents.get(2).trim();
-	}
-
-	private List<SequenceItem> readSequence() {
-		List<String> fileContents = getFileContentsFor("setup.txt");
-		String[] sequenceValues = fileContents.get(0).split(",");
-		List<SequenceItem> sequenceItems = new ArrayList<>();
-		for (String sequenceValue : sequenceValues) {
-			sequenceItems.add(SequenceItem.builder().withValue(sequenceValue).build());
-		}
-		return sequenceItems;
-	}
-
 	private List<String> getFileContentsFor(String filePath) {
 		List<String> lines = new ArrayList<>();
-    	try {
+		try {
 			ClassLoader classLoader = getClass().getClassLoader();
 			InputStream inputStream = classLoader.getResourceAsStream(filePath);
 			assert inputStream != null;
@@ -143,8 +135,8 @@ public class App {
 			lines = br.lines().collect(Collectors.toList());
 			br.close();
 		}
-    	catch (IOException ioe) {
-    		log.error(ioe.getLocalizedMessage(), ioe);
+		catch (IOException ioe) {
+			log.error(ioe.getLocalizedMessage(), ioe);
 		}
 		return lines;
 	}

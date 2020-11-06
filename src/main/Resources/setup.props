@@ -1,0 +1,3 @@
+SEQUENCE: red, blue, red, orange, yellow
+RULE: red
+CORRECT_RESULTS: true false true false false

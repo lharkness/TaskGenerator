@@ -1,4 +1,4 @@
-package com.leeharkness.taskgenerator;
+package com.leeharkness.taskgenerator.model;
 
 import lombok.Builder;
 import lombok.Data;

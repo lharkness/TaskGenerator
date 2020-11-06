@@ -1,4 +1,4 @@
-package com.leeharkness.taskgenerator;
+package com.leeharkness.taskgenerator.model;
 
 /**
  * Represents the current state of the sequence validation

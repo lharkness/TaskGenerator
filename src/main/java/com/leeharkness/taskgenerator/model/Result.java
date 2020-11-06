@@ -1,4 +1,4 @@
-package com.leeharkness.taskgenerator;
+package com.leeharkness.taskgenerator.model;
 
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +16,7 @@ public class Result {
     /**
      * Possible value for the user's response to a sequence item
      */
-    enum Status {
+    public enum Status {
         C,
         I
     }
