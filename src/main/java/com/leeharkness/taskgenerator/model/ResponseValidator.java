@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * This thing will validate a user's responses to a sequence given a rule and
  * return that as a list of Results.
+ * TODO: add the ability to evaluate a given rule rather than what this thing does, which depends on being given
+ * the correct responses and then comparing the responses to those.
  */
 @Slf4j
 public class ResponseValidator {
