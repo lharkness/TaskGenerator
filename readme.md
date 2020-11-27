@@ -9,7 +9,7 @@ Download the jar file.
 Ensure you have Java installed.  Create a setup file (refer to the `setup.props` file in the project)
 Create a test data file (refer to the `testData.txt` file in the project).  Execute the following command:
 
-`java -jar \path\to\setup.props \path\to\testData.txt`
+`java -jar \path\to\jarfile \path\to\setup.props \path\to\testData.txt`
 
 The results of the execution will either upload the JavaScript to S3 if AWS info is provided or output the generated 
 Javascript to the console if not.  If any validation fails the failure will be reported on the console.
