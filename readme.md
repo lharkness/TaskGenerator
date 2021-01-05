@@ -15,7 +15,6 @@ The results of the execution will either upload the JavaScript to S3 if AWS info
 Javascript to the console if not.  If any validation fails the failure will be reported on the console.
 
 ### Notes
-This code does not currently upload to S3.
 
 ![overview](exerciseCreation.png)  
  
